@@ -3,11 +3,14 @@ import logging
 import sys
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message
+from aiogram.types import Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.client.default import DefaultBotProperties
 from handlers import Handlers
 from config import TELEGRAM_BOT_TOKEN, OPENAI_API_KEY
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
@@ -19,6 +22,23 @@ dp = Dispatcher()
 
 # Initialize handlers
 handlers = Handlers(OPENAI_API_KEY)
+
+class HealthCheckHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == '/health' or self.path == '/':
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b'OK')
+        else:
+            self.send_response(404)
+            self.end_headers()
+
+def run_health_server():
+    """Run a simple HTTP server for health checks"""
+    port = int(os.environ.get('PORT', 8080))
+    server = HTTPServer(('0.0.0.0', port), HealthCheckHandler)
+    logger.info(f"Health check server running on port {port}")
+    server.serve_forever()
 
 @dp.message(Command("start"))
 async def start_command(message: Message):
@@ -148,7 +168,11 @@ async def handle_message(message: Message):
 async def main():
     """Main function to start the bot"""
     try:
-        logger.info("Starting bot...")
+        # Start health check server in a separate thread
+        health_thread = threading.Thread(target=run_health_server, daemon=True)
+        health_thread.start()
+        
+        logger.info("Starting Telegram bot...")
         await dp.start_polling(bot)
     except Exception as e:
         logger.error(f"Error starting bot: {e}")
