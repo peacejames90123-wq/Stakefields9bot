@@ -44,26 +44,23 @@ def run_health_server():
 async def start_command(message: types.Message):
     """Handle /start command with Spanish welcome message"""
     welcome_text = (
-        "🤖 *¡Bienvenido a Stakefields9 Bot!*\n\n"
-        "Soy tu asistente impulsado por IA que puede ayudarte con diversas tareas:\n"
-        "• Responder preguntas sobre cualquier tema\n"
-        "• Escribir y reescribir textos, correos electrónicos y mensajes\n"
+        "🤖 *¡Hola! Bienvenido a @Stakefields9bot, impulsado por OpenAI.*\n\n"
+        "Puedo ayudarte con:\n"
+        "• Chatear naturalmente y generar ideas\n"
+        "• Escribir, reescribir y traducir textos/correos electrónicos\n"
         "• Resumir textos largos\n"
-        "• Traducir texto a diferentes idiomas\n"
-        "• Generar ideas, código y contenido creativo\n\n"
+        "• Escribir y explicar código\n\n"
+        "¡Simplemente envíame un mensaje o usa las opciones de navegación que aparecen abajo!\n\n"
         "📝 *Comandos Disponibles:*\n"
-        "/help - Mostrar este mensaje de ayuda\n"
-        "/clear - Borrar el historial de la conversación\n"
-        "/new - Iniciar una nueva conversación\n\n"
-        "💡 *Consejo:* ¡También puedes usarme para conversaciones naturales!\n"
-        "Solo envíame un mensaje y te responderé."
+        "/help - Mostrar ayuda\n"
+        "/clear - Borrar historial de conversación\n"
+        "/new - Iniciar nueva conversación"
     )
     
     keyboard = InlineKeyboardMarkup(row_width=2)
     keyboard.add(
-        InlineKeyboardButton("💬 Ayuda", callback_data="help"),
-        InlineKeyboardButton("🔄 Nueva Conversación", callback_data="new_chat"),
-        InlineKeyboardButton("❓ Acerca de", callback_data="about")
+        InlineKeyboardButton("🗑️ Borrar Memoria", callback_data="clear_memory"),
+        InlineKeyboardButton("📖 Mostrar Ayuda", callback_data="show_help")
     )
     
     await message.reply(
@@ -76,7 +73,7 @@ async def start_command(message: types.Message):
 async def help_command(message: types.Message):
     """Handle /help command in Spanish"""
     help_text = (
-        "🤖 *Ayuda de Stakefields9 Bot*\n\n"
+        "🤖 *Ayuda de @Stakefields9bot*\n\n"
         "*Comandos:*\n"
         "/start - Iniciar el bot y ver mensaje de bienvenida\n"
         "/help - Mostrar este mensaje de ayuda\n"
@@ -94,7 +91,12 @@ async def help_command(message: types.Message):
         "Para tareas específicas, ¡solo describe lo que necesitas!"
     )
     
-    await message.reply(help_text, parse_mode="Markdown")
+    keyboard = InlineKeyboardMarkup(row_width=1)
+    keyboard.add(
+        InlineKeyboardButton("🔄 Nueva Conversación", callback_data="new_chat")
+    )
+    
+    await message.reply(help_text, parse_mode="Markdown", reply_markup=keyboard)
 
 @dp.message_handler(commands=['clear'])
 async def clear_command(message: types.Message):
@@ -108,23 +110,27 @@ async def new_command(message: types.Message):
     """Handle /new command in Spanish"""
     user_id = message.from_user.id
     handlers.new_conversation(user_id)
-    await message.reply("🔄 ¡Nueva conversación iniciada! ¡Hablemos!")
+    await message.reply("🔄 ¡Nueva conversación iniciada! ¿En qué puedo ayudarte?")
 
 @dp.callback_query_handler(lambda c: True)
 async def handle_callbacks(callback_query: types.CallbackQuery):
     """Handle inline keyboard callbacks in Spanish"""
     user_id = callback_query.from_user.id
     
-    if callback_query.data == "help":
+    if callback_query.data == "show_help":
         await help_command(callback_query.message)
+    
+    elif callback_query.data == "clear_memory":
+        handlers.clear_history(user_id)
+        await callback_query.message.reply("✅ ¡Memoria borrada! Puedes empezar de nuevo.")
     
     elif callback_query.data == "new_chat":
         handlers.new_conversation(user_id)
-        await callback_query.message.reply("🔄 ¡Nueva conversación iniciada!")
+        await callback_query.message.reply("🔄 ¡Nueva conversación iniciada! ¿En qué puedo ayudarte?")
     
     elif callback_query.data == "about":
         about_text = (
-            "ℹ️ *Acerca de Stakefields9 Bot*\n\n"
+            "ℹ️ *Acerca de @Stakefields9bot*\n\n"
             "Este bot utiliza el potente modelo de lenguaje de OpenAI para ayudarte con diversas tareas.\n\n"
             "• *Desarrollador:* Stakefields\n"
             "• *Impulsado por:* OpenAI GPT-3.5-turbo\n"
