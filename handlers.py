@@ -24,9 +24,18 @@ class Handlers:
     
     def new_conversation(self, user_id: int):
         self.clear_history(user_id)
+        # Force Spanish responses with a strong system prompt
         self.conversations[user_id].append({
             "role": "system",
-            "content": "Eres Stakefields9 Bot, un asistente de IA útil y amigable. Hablas exclusivamente en español. Eres conocedor, preciso y proporcionas información precisa. Ayudas con escritura, codificación, traducción, resumen y tareas creativas. Sé conciso pero completo en tus respuestas. Siempre respondes en español, sin importar el idioma en que te pregunten."
+            "content": (
+                "Eres @Stakefields9bot, un asistente de IA avanzado impulsado por OpenAI. "
+                "DEBES responder SIEMPRE en ESPAÑOL, sin importar el idioma en que te pregunten. "
+                "Eres amigable, conocedor, preciso y proporcionas información útil. "
+                "Ayudas con: conversaciones naturales, escritura, reescritura, traducción, "
+                "resumen de textos, generación de código, explicación de código, "
+                "y creación de contenido creativo. Sé conciso pero completo en tus respuestas. "
+                "Si te preguntan en inglés, respondes en español. SIEMPRE en español."
+            )
         })
     
     async def get_openai_response(self, user_id: int, user_input: str) -> str:
@@ -37,12 +46,15 @@ class Handlers:
                 self.new_conversation(user_id)
                 history = self.conversations[user_id]
             
+            # Add user message
             history.append({"role": "user", "content": user_input})
             
+            # Keep only last N messages
             if len(history) > self.max_history_length + 1:
                 history = [history[0]] + history[-(self.max_history_length):]
                 self.conversations[user_id] = history
             
+            # Get response from OpenAI
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=history,
