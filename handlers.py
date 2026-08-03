@@ -22,11 +22,11 @@ class Handlers:
             self.conversations[user_id] = []
     
     def new_conversation(self, user_id: int):
-        """Start a new conversation"""
+        """Start a new conversation with Spanish system message"""
         self.clear_history(user_id)
         self.conversations[user_id].append({
             "role": "system",
-            "content": "You are Stakefields9 Bot, a helpful AI assistant. You are friendly, knowledgeable, and provide accurate information. You help with writing, coding, translation, summarization, and creative tasks. Be concise but thorough in your responses."
+            "content": "Eres Stakefields9 Bot, un asistente de IA útil y amigable. Hablas exclusivamente en español. Eres conocedor, preciso y proporcionas información precisa. Ayudas con escritura, codificación, traducción, resumen y tareas creativas. Sé conciso pero completo en tus respuestas. Siempre respondes en español, sin importar el idioma en que te pregunten."
         })
     
     async def get_openai_response(self, user_id: int, user_input: str) -> str:
@@ -63,12 +63,12 @@ class Handlers:
             return assistant_message
             
         except openai.RateLimitError:
-            return "⚠️ Rate limit exceeded. Please try again in a moment."
+            return "⚠️ Límite de velocidad excedido. Por favor, intenta de nuevo en un momento."
         except openai.AuthenticationError:
-            return "❌ Authentication error. Please check your API key."
+            return "❌ Error de autenticación. Por favor, verifica tu clave API."
         except openai.APIError as e:
             logger.error(f"OpenAI API error: {e}")
-            return "❌ OpenAI API error. Please try again later."
+            return "❌ Error en la API de OpenAI. Por favor, intenta más tarde."
         except Exception as e:
             logger.error(f"OpenAI error: {e}")
-            return "❌ An error occurred while processing your request. Please try again."
+            return "❌ Ocurrió un error al procesar tu solicitud. Por favor, intenta de nuevo."
