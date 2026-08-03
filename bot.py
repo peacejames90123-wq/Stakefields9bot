@@ -42,28 +42,28 @@ def run_health_server():
 
 @dp.message(Command("start"))
 async def start_command(message: Message):
-    """Handle /start command"""
+    """Handle /start command with Spanish welcome message"""
     welcome_text = (
-        "🤖 *Welcome to Stakefields9 Bot!*\n\n"
-        "I'm your AI-powered assistant that can help you with various tasks:\n"
-        "• Answer questions on any topic\n"
-        "• Write and rewrite text, emails, and messages\n"
-        "• Summarize long text\n"
-        "• Translate text into different languages\n"
-        "• Generate ideas, code, and creative content\n\n"
-        "📝 *Available Commands:*\n"
-        "/help - Show this help message\n"
-        "/clear - Clear chat history\n"
-        "/new - Start a new conversation\n\n"
-        "💡 *Tip:* You can also use me for natural conversations!\n"
-        "Just send me a message and I'll respond."
+        "🤖 *¡Bienvenido a Stakefields9 Bot!*\n\n"
+        "Soy tu asistente impulsado por IA que puede ayudarte con diversas tareas:\n"
+        "• Responder preguntas sobre cualquier tema\n"
+        "• Escribir y reescribir textos, correos electrónicos y mensajes\n"
+        "• Resumir textos largos\n"
+        "• Traducir texto a diferentes idiomas\n"
+        "• Generar ideas, código y contenido creativo\n\n"
+        "📝 *Comandos Disponibles:*\n"
+        "/help - Mostrar este mensaje de ayuda\n"
+        "/clear - Borrar el historial de la conversación\n"
+        "/new - Iniciar una nueva conversación\n\n"
+        "💡 *Consejo:* ¡También puedes usarme para conversaciones naturales!\n"
+        "Solo envíame un mensaje y te responderé."
     )
     
     # Create inline keyboard
     builder = InlineKeyboardBuilder()
-    builder.add(types.InlineKeyboardButton(text="💬 Help", callback_data="help"))
-    builder.add(types.InlineKeyboardButton(text="🔄 New Chat", callback_data="new_chat"))
-    builder.add(types.InlineKeyboardButton(text="❓ About", callback_data="about"))
+    builder.add(types.InlineKeyboardButton(text="💬 Ayuda", callback_data="help"))
+    builder.add(types.InlineKeyboardButton(text="🔄 Nueva Conversación", callback_data="new_chat"))
+    builder.add(types.InlineKeyboardButton(text="❓ Acerca de", callback_data="about"))
     builder.adjust(2)
     
     await message.reply(
@@ -73,45 +73,45 @@ async def start_command(message: Message):
 
 @dp.message(Command("help"))
 async def help_command(message: Message):
-    """Handle /help command"""
+    """Handle /help command in Spanish"""
     help_text = (
-        "🤖 *Stakefields9 Bot Help*\n\n"
-        "*Commands:*\n"
-        "/start - Start the bot and see welcome message\n"
-        "/help - Show this help message\n"
-        "/clear - Clear your chat history\n"
-        "/new - Start a new conversation\n\n"
-        "*Features:*\n"
-        "• Natural conversations with AI\n"
-        "• Text writing and rewriting\n"
-        "• Text summarization\n"
-        "• Language translation\n"
-        "• Code generation\n"
-        "• Creative content creation\n\n"
-        "*How to use:*\n"
-        "Simply send me a message, and I'll respond intelligently.\n"
-        "For specific tasks, just describe what you need!"
+        "🤖 *Ayuda de Stakefields9 Bot*\n\n"
+        "*Comandos:*\n"
+        "/start - Iniciar el bot y ver mensaje de bienvenida\n"
+        "/help - Mostrar este mensaje de ayuda\n"
+        "/clear - Borrar el historial de la conversación\n"
+        "/new - Iniciar una nueva conversación\n\n"
+        "*Características:*\n"
+        "• Conversaciones naturales con IA\n"
+        "• Escritura y reescritura de textos\n"
+        "• Resumen de textos\n"
+        "• Traducción de idiomas\n"
+        "• Generación de código\n"
+        "• Creación de contenido creativo\n\n"
+        "*Cómo usar:*\n"
+        "¡Simplemente envíame un mensaje y te responderé inteligentemente!\n"
+        "Para tareas específicas, ¡solo describe lo que necesitas!"
     )
     
     await message.reply(help_text)
 
 @dp.message(Command("clear"))
 async def clear_command(message: Message):
-    """Handle /clear command"""
+    """Handle /clear command in Spanish"""
     user_id = message.from_user.id
     handlers.clear_history(user_id)
-    await message.reply("✅ Chat history cleared! You can start fresh.")
+    await message.reply("✅ ¡Historial de conversación borrado! Puedes empezar de nuevo.")
 
 @dp.message(Command("new"))
 async def new_command(message: Message):
-    """Handle /new command"""
+    """Handle /new command in Spanish"""
     user_id = message.from_user.id
     handlers.new_conversation(user_id)
-    await message.reply("🔄 New conversation started! Let's chat!")
+    await message.reply("🔄 ¡Nueva conversación iniciada! ¡Hablemos!")
 
 @dp.callback_query()
 async def handle_callbacks(callback_query: types.CallbackQuery):
-    """Handle inline keyboard callbacks"""
+    """Handle inline keyboard callbacks in Spanish"""
     user_id = callback_query.from_user.id
     
     if callback_query.data == "help":
@@ -119,16 +119,16 @@ async def handle_callbacks(callback_query: types.CallbackQuery):
     
     elif callback_query.data == "new_chat":
         handlers.new_conversation(user_id)
-        await callback_query.message.reply("🔄 New conversation started!")
+        await callback_query.message.reply("🔄 ¡Nueva conversación iniciada!")
     
     elif callback_query.data == "about":
         about_text = (
-            "ℹ️ *About Stakefields9 Bot*\n\n"
-            "This bot uses OpenAI's powerful language model to help you with various tasks.\n\n"
-            "• *Developer:* Stakefields\n"
-            "• *Powered by:* OpenAI GPT-3.5-turbo\n"
-            "• *Version:* 2.0.0\n\n"
-            "I'm here to help with your daily tasks, creative projects, and information needs!"
+            "ℹ️ *Acerca de Stakefields9 Bot*\n\n"
+            "Este bot utiliza el potente modelo de lenguaje de OpenAI para ayudarte con diversas tareas.\n\n"
+            "• *Desarrollador:* Stakefields\n"
+            "• *Impulsado por:* OpenAI GPT-3.5-turbo\n"
+            "• *Versión:* 2.0.0\n\n"
+            "¡Estoy aquí para ayudarte con tus tareas diarias, proyectos creativos y necesidades de información!"
         )
         await callback_query.message.reply(about_text)
     
@@ -160,8 +160,8 @@ async def handle_message(message: Message):
     except Exception as e:
         logger.error(f"Error processing message: {e}")
         error_message = (
-            "❌ Sorry, I encountered an error while processing your request.\n"
-            "Please try again or use /clear to reset the conversation."
+            "❌ Lo siento, encontré un error al procesar tu solicitud.\n"
+            "Por favor, intenta de nuevo o usa /clear para reiniciar la conversación."
         )
         await message.reply(error_message)
 
