@@ -42,7 +42,11 @@ def run_health_server():
 
 @dp.message_handler(commands=['start'])
 async def start_command(message: types.Message):
-    """Handle /start command - ALL SPANISH"""
+    """Handle /start command - ONLY SPANISH, NO ENGLISH"""
+    # Clear any existing conversation for this user
+    user_id = message.from_user.id
+    handlers.new_conversation(user_id)
+    
     welcome_text = (
         "🤖 *¡Hola! Bienvenido a @Stakefields9bot, impulsado por OpenAI.*\n\n"
         "Puedo ayudarte con:\n"
@@ -60,6 +64,13 @@ async def start_command(message: types.Message):
         InlineKeyboardButton("🔄 Nueva Conversación", callback_data="new_chat")
     )
     
+    # Delete the previous message if it exists to avoid duplicates
+    try:
+        await message.delete()
+    except:
+        pass
+    
+    # Send ONLY the Spanish welcome message
     await message.reply(
         welcome_text,
         parse_mode="Markdown",
@@ -68,7 +79,7 @@ async def start_command(message: types.Message):
 
 @dp.message_handler(commands=['help'])
 async def help_command(message: types.Message):
-    """Handle /help command - ALL SPANISH"""
+    """Handle /help command - ONLY SPANISH"""
     help_text = (
         "🤖 *Ayuda de @Stakefields9bot*\n\n"
         "*Comandos Disponibles:*\n"
@@ -98,21 +109,21 @@ async def help_command(message: types.Message):
 
 @dp.message_handler(commands=['clear'])
 async def clear_command(message: types.Message):
-    """Handle /clear command - ALL SPANISH"""
+    """Handle /clear command - ONLY SPANISH"""
     user_id = message.from_user.id
     handlers.clear_history(user_id)
     await message.reply("✅ ¡Historial de conversación borrado! Puedes empezar de nuevo.")
 
 @dp.message_handler(commands=['new'])
 async def new_command(message: types.Message):
-    """Handle /new command - ALL SPANISH"""
+    """Handle /new command - ONLY SPANISH"""
     user_id = message.from_user.id
     handlers.new_conversation(user_id)
     await message.reply("🔄 ¡Nueva conversación iniciada! ¿En qué puedo ayudarte?")
 
 @dp.callback_query_handler(lambda c: True)
 async def handle_callbacks(callback_query: types.CallbackQuery):
-    """Handle inline keyboard callbacks - ALL SPANISH"""
+    """Handle inline keyboard callbacks - ONLY SPANISH"""
     user_id = callback_query.from_user.id
     
     if callback_query.data == "show_help":
