@@ -42,7 +42,7 @@ def run_health_server():
 
 @dp.message_handler(commands=['start'])
 async def start_command(message: types.Message):
-    """Handle /start command with Spanish welcome message"""
+    """Handle /start command - ALL SPANISH"""
     welcome_text = (
         "🤖 *¡Hola! Bienvenido a @Stakefields9bot, impulsado por OpenAI.*\n\n"
         "Puedo ayudarte con:\n"
@@ -50,17 +50,14 @@ async def start_command(message: types.Message):
         "• Escribir, reescribir y traducir textos/correos electrónicos\n"
         "• Resumir textos largos\n"
         "• Escribir y explicar código\n\n"
-        "¡Simplemente envíame un mensaje o usa las opciones de navegación que aparecen abajo!\n\n"
-        "📝 *Comandos Disponibles:*\n"
-        "/help - Mostrar ayuda\n"
-        "/clear - Borrar historial de conversación\n"
-        "/new - Iniciar nueva conversación"
+        "¡Simplemente envíame un mensaje o usa las opciones de navegación que aparecen abajo!"
     )
     
     keyboard = InlineKeyboardMarkup(row_width=2)
     keyboard.add(
         InlineKeyboardButton("🗑️ Borrar Memoria", callback_data="clear_memory"),
-        InlineKeyboardButton("📖 Mostrar Ayuda", callback_data="show_help")
+        InlineKeyboardButton("📖 Mostrar Ayuda", callback_data="show_help"),
+        InlineKeyboardButton("🔄 Nueva Conversación", callback_data="new_chat")
     )
     
     await message.reply(
@@ -71,10 +68,10 @@ async def start_command(message: types.Message):
 
 @dp.message_handler(commands=['help'])
 async def help_command(message: types.Message):
-    """Handle /help command in Spanish"""
+    """Handle /help command - ALL SPANISH"""
     help_text = (
         "🤖 *Ayuda de @Stakefields9bot*\n\n"
-        "*Comandos:*\n"
+        "*Comandos Disponibles:*\n"
         "/start - Iniciar el bot y ver mensaje de bienvenida\n"
         "/help - Mostrar este mensaje de ayuda\n"
         "/clear - Borrar el historial de la conversación\n"
@@ -93,28 +90,29 @@ async def help_command(message: types.Message):
     
     keyboard = InlineKeyboardMarkup(row_width=1)
     keyboard.add(
-        InlineKeyboardButton("🔄 Nueva Conversación", callback_data="new_chat")
+        InlineKeyboardButton("🔄 Nueva Conversación", callback_data="new_chat"),
+        InlineKeyboardButton("🗑️ Borrar Memoria", callback_data="clear_memory")
     )
     
     await message.reply(help_text, parse_mode="Markdown", reply_markup=keyboard)
 
 @dp.message_handler(commands=['clear'])
 async def clear_command(message: types.Message):
-    """Handle /clear command in Spanish"""
+    """Handle /clear command - ALL SPANISH"""
     user_id = message.from_user.id
     handlers.clear_history(user_id)
     await message.reply("✅ ¡Historial de conversación borrado! Puedes empezar de nuevo.")
 
 @dp.message_handler(commands=['new'])
 async def new_command(message: types.Message):
-    """Handle /new command in Spanish"""
+    """Handle /new command - ALL SPANISH"""
     user_id = message.from_user.id
     handlers.new_conversation(user_id)
     await message.reply("🔄 ¡Nueva conversación iniciada! ¿En qué puedo ayudarte?")
 
 @dp.callback_query_handler(lambda c: True)
 async def handle_callbacks(callback_query: types.CallbackQuery):
-    """Handle inline keyboard callbacks in Spanish"""
+    """Handle inline keyboard callbacks - ALL SPANISH"""
     user_id = callback_query.from_user.id
     
     if callback_query.data == "show_help":
@@ -127,17 +125,6 @@ async def handle_callbacks(callback_query: types.CallbackQuery):
     elif callback_query.data == "new_chat":
         handlers.new_conversation(user_id)
         await callback_query.message.reply("🔄 ¡Nueva conversación iniciada! ¿En qué puedo ayudarte?")
-    
-    elif callback_query.data == "about":
-        about_text = (
-            "ℹ️ *Acerca de @Stakefields9bot*\n\n"
-            "Este bot utiliza el potente modelo de lenguaje de OpenAI para ayudarte con diversas tareas.\n\n"
-            "• *Desarrollador:* Stakefields\n"
-            "• *Impulsado por:* OpenAI GPT-3.5-turbo\n"
-            "• *Versión:* 2.0.0\n\n"
-            "¡Estoy aquí para ayudarte con tus tareas diarias, proyectos creativos y necesidades de información!"
-        )
-        await callback_query.message.reply(about_text, parse_mode="Markdown")
     
     await callback_query.answer()
 
