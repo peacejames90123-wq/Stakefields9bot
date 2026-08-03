@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import sys
 from aiogram import Bot, Dispatcher, types
@@ -40,15 +39,18 @@ def run_health_server():
     logger.info(f"Health check server running on port {port}")
     server.serve_forever()
 
+# START COMMAND - COMPLETELY IN SPANISH
 @dp.message_handler(commands=['start'])
 async def start_command(message: types.Message):
-    """Handle /start command - ONLY SPANISH, NO ENGLISH"""
-    # Clear any existing conversation for this user
+    """Handle /start command - ONLY SPANISH"""
     user_id = message.from_user.id
     handlers.new_conversation(user_id)
     
+    # Get user's first name for personalization
+    user_name = message.from_user.first_name or "Usuario"
+    
     welcome_text = (
-        "🤖 *¡Hola! Bienvenido a @Stakefields9bot, impulsado por OpenAI.*\n\n"
+        f"🤖 *¡Hola {user_name}! Bienvenido a @Stakefields9bot, impulsado por OpenAI.*\n\n"
         "Puedo ayudarte con:\n"
         "• Chatear naturalmente y generar ideas\n"
         "• Escribir, reescribir y traducir textos/correos electrónicos\n"
@@ -64,19 +66,13 @@ async def start_command(message: types.Message):
         InlineKeyboardButton("🔄 Nueva Conversación", callback_data="new_chat")
     )
     
-    # Delete the previous message if it exists to avoid duplicates
-    try:
-        await message.delete()
-    except:
-        pass
-    
-    # Send ONLY the Spanish welcome message
     await message.reply(
         welcome_text,
         parse_mode="Markdown",
         reply_markup=keyboard
     )
 
+# HELP COMMAND - COMPLETELY IN SPANISH
 @dp.message_handler(commands=['help'])
 async def help_command(message: types.Message):
     """Handle /help command - ONLY SPANISH"""
@@ -107,6 +103,7 @@ async def help_command(message: types.Message):
     
     await message.reply(help_text, parse_mode="Markdown", reply_markup=keyboard)
 
+# CLEAR COMMAND - COMPLETELY IN SPANISH
 @dp.message_handler(commands=['clear'])
 async def clear_command(message: types.Message):
     """Handle /clear command - ONLY SPANISH"""
@@ -114,6 +111,7 @@ async def clear_command(message: types.Message):
     handlers.clear_history(user_id)
     await message.reply("✅ ¡Historial de conversación borrado! Puedes empezar de nuevo.")
 
+# NEW COMMAND - COMPLETELY IN SPANISH
 @dp.message_handler(commands=['new'])
 async def new_command(message: types.Message):
     """Handle /new command - ONLY SPANISH"""
@@ -121,6 +119,7 @@ async def new_command(message: types.Message):
     handlers.new_conversation(user_id)
     await message.reply("🔄 ¡Nueva conversación iniciada! ¿En qué puedo ayudarte?")
 
+# CALLBACK HANDLER - COMPLETELY IN SPANISH
 @dp.callback_query_handler(lambda c: True)
 async def handle_callbacks(callback_query: types.CallbackQuery):
     """Handle inline keyboard callbacks - ONLY SPANISH"""
@@ -139,9 +138,10 @@ async def handle_callbacks(callback_query: types.CallbackQuery):
     
     await callback_query.answer()
 
+# HANDLE ALL MESSAGES - RESPOND IN SPANISH
 @dp.message_handler()
 async def handle_message(message: types.Message):
-    """Handle all other messages"""
+    """Handle all other messages - Respond in Spanish"""
     # Show typing indicator
     await bot.send_chat_action(message.chat.id, action=types.ChatActions.TYPING)
     
@@ -152,7 +152,7 @@ async def handle_message(message: types.Message):
         return
     
     try:
-        # Get response from OpenAI
+        # Get response from OpenAI (will be in Spanish)
         response = await handlers.get_openai_response(user_id, user_input)
         
         # Send response (split if too long)
