@@ -46,7 +46,7 @@ async def start_command(message: types.Message):
     user_id = message.from_user.id
     handlers.new_conversation(user_id)
     
-    # Get user's first name for personalization
+    # Get user's first name
     user_name = message.from_user.first_name or "Usuario"
     
     welcome_text = (
