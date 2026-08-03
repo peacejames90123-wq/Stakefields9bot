@@ -2,10 +2,9 @@ import asyncio
 import logging
 import sys
 from aiogram import Bot, Dispatcher, types
-from aiogram.filters import Command
-from aiogram.types import Message
-from aiogram.utils.keyboard import InlineKeyboardBuilder
-from aiogram.client.default import DefaultBotProperties
+from aiogram.contrib.middlewares.logging import LoggingMiddleware
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils import executor
 from handlers import Handlers
 from config import TELEGRAM_BOT_TOKEN, OPENAI_API_KEY
 import threading
@@ -16,12 +15,13 @@ import os
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 logger = logging.getLogger(__name__)
 
-# Initialize bot with aiogram 3.x
-bot = Bot(token=TELEGRAM_BOT_TOKEN, default=DefaultBotProperties(parse_mode="Markdown"))
-dp = Dispatcher()
+# Initialize bot and dispatcher
+bot = Bot(token=TELEGRAM_BOT_TOKEN)
+dp = Dispatcher(bot)
+dp.middleware.setup(LoggingMiddleware())
 
 # Initialize handlers
-handlers = Handlers(OPENAI_API_KEY)
+handlers = Handlers()
 
 class HealthCheckHandler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -40,8 +40,8 @@ def run_health_server():
     logger.info(f"Health check server running on port {port}")
     server.serve_forever()
 
-@dp.message(Command("start"))
-async def start_command(message: Message):
+@dp.message_handler(commands=['start'])
+async def start_command(message: types.Message):
     """Handle /start command with Spanish welcome message"""
     welcome_text = (
         "🤖 *¡Bienvenido a Stakefields9 Bot!*\n\n"
@@ -59,20 +59,21 @@ async def start_command(message: Message):
         "Solo envíame un mensaje y te responderé."
     )
     
-    # Create inline keyboard
-    builder = InlineKeyboardBuilder()
-    builder.add(types.InlineKeyboardButton(text="💬 Ayuda", callback_data="help"))
-    builder.add(types.InlineKeyboardButton(text="🔄 Nueva Conversación", callback_data="new_chat"))
-    builder.add(types.InlineKeyboardButton(text="❓ Acerca de", callback_data="about"))
-    builder.adjust(2)
+    keyboard = InlineKeyboardMarkup(row_width=2)
+    keyboard.add(
+        InlineKeyboardButton("💬 Ayuda", callback_data="help"),
+        InlineKeyboardButton("🔄 Nueva Conversación", callback_data="new_chat"),
+        InlineKeyboardButton("❓ Acerca de", callback_data="about")
+    )
     
     await message.reply(
         welcome_text,
-        reply_markup=builder.as_markup()
+        parse_mode="Markdown",
+        reply_markup=keyboard
     )
 
-@dp.message(Command("help"))
-async def help_command(message: Message):
+@dp.message_handler(commands=['help'])
+async def help_command(message: types.Message):
     """Handle /help command in Spanish"""
     help_text = (
         "🤖 *Ayuda de Stakefields9 Bot*\n\n"
@@ -93,23 +94,23 @@ async def help_command(message: Message):
         "Para tareas específicas, ¡solo describe lo que necesitas!"
     )
     
-    await message.reply(help_text)
+    await message.reply(help_text, parse_mode="Markdown")
 
-@dp.message(Command("clear"))
-async def clear_command(message: Message):
+@dp.message_handler(commands=['clear'])
+async def clear_command(message: types.Message):
     """Handle /clear command in Spanish"""
     user_id = message.from_user.id
     handlers.clear_history(user_id)
     await message.reply("✅ ¡Historial de conversación borrado! Puedes empezar de nuevo.")
 
-@dp.message(Command("new"))
-async def new_command(message: Message):
+@dp.message_handler(commands=['new'])
+async def new_command(message: types.Message):
     """Handle /new command in Spanish"""
     user_id = message.from_user.id
     handlers.new_conversation(user_id)
     await message.reply("🔄 ¡Nueva conversación iniciada! ¡Hablemos!")
 
-@dp.callback_query()
+@dp.callback_query_handler(lambda c: True)
 async def handle_callbacks(callback_query: types.CallbackQuery):
     """Handle inline keyboard callbacks in Spanish"""
     user_id = callback_query.from_user.id
@@ -130,13 +131,16 @@ async def handle_callbacks(callback_query: types.CallbackQuery):
             "• *Versión:* 2.0.0\n\n"
             "¡Estoy aquí para ayudarte con tus tareas diarias, proyectos creativos y necesidades de información!"
         )
-        await callback_query.message.reply(about_text)
+        await callback_query.message.reply(about_text, parse_mode="Markdown")
     
     await callback_query.answer()
 
-@dp.message()
-async def handle_message(message: Message):
+@dp.message_handler()
+async def handle_message(message: types.Message):
     """Handle all other messages"""
+    # Show typing indicator
+    await bot.send_chat_action(message.chat.id, action=types.ChatActions.TYPING)
+    
     user_id = message.from_user.id
     user_input = message.text
     
@@ -144,9 +148,6 @@ async def handle_message(message: Message):
         return
     
     try:
-        # Show typing indicator
-        await bot.send_chat_action(chat_id=message.chat.id, action="typing")
-        
         # Get response from OpenAI
         response = await handlers.get_openai_response(user_id, user_input)
         
@@ -165,18 +166,11 @@ async def handle_message(message: Message):
         )
         await message.reply(error_message)
 
-async def main():
-    """Main function to start the bot"""
-    try:
-        # Start health check server in a separate thread
-        health_thread = threading.Thread(target=run_health_server, daemon=True)
-        health_thread.start()
-        
-        logger.info("Starting Telegram bot...")
-        await dp.start_polling(bot)
-    except Exception as e:
-        logger.error(f"Error starting bot: {e}")
-        raise
-
-if __name__ == "__main__":
-    asyncio.run(main())
+if __name__ == '__main__':
+    # Start health check server in a separate thread
+    health_thread = threading.Thread(target=run_health_server, daemon=True)
+    health_thread.start()
+    
+    # Start the bot
+    from aiogram import executor
+    executor.start_polling(dp, skip_updates=True)
